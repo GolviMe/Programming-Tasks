@@ -10,6 +10,7 @@ namespace Task1
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("KubSU is one of the largest universities in southern Russia");
         }
     }
 }
