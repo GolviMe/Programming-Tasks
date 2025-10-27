@@ -18,6 +18,7 @@ namespace Task_2
         }
 
         
+        
         public static ComplexNumber Plus(ref ComplexNumber a, ref ComplexNumber b) //плюс
         {
             return new ComplexNumber(a.Real + b.Real, a.Imaginary + b.Imaginary);

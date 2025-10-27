@@ -17,7 +17,6 @@ namespace Task_1
             {
                 var (sizing, matrixG, vectorX) = ReadFile("input.txt");
 
-                //проверка симметрии матрицы
                 if (!IsSimmetric(matrixG, sizing))
                 {
                     Console.WriteLine("Матрица G не является симметричной!");
