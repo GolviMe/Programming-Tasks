@@ -173,7 +173,6 @@ public class MyPriorityQueue<T> : IEnumerable<T>
     {
         if (a == null) throw new ArgumentNullException(nameof(a));
 
-        // Создаем HashSet для быстрого поиска
         var set = new HashSet<T>(a);
         var newQueue = new List<T>();
 
@@ -218,7 +217,7 @@ public class MyPriorityQueue<T> : IEnumerable<T>
         return a;
     }
 
-    // 18) Элемент из головы (без удаления)
+    // 18) Элемент из верхушки (без удаления)
     public T Element()
     {
         if (size == 0) throw new InvalidOperationException("Очередь пуста");
@@ -239,10 +238,10 @@ public class MyPriorityQueue<T> : IEnumerable<T>
         }
     }
 
-    // 20) Просмотр головы
+    // 20) Просмотр верхушки
     public T Peek() => size == 0 ? default(T) : queue[0];
 
-    // 21) Извлечение из головы
+    // 21) Извлечение из верхушки
     public T Poll()
     {
         if (size == 0) return default(T);
@@ -281,7 +280,7 @@ public class MyPriorityQueue<T> : IEnumerable<T>
             if (queue.Length < 64)
                 newCapacity = queue.Length * 2;
             else
-                newCapacity = queue.Length + (queue.Length >> 1); // +50%
+                newCapacity = queue.Length + (queue.Length >> 1);
 
             if (newCapacity < minCapacity)
                 newCapacity = minCapacity;
@@ -339,7 +338,6 @@ public class MyPriorityQueue<T> : IEnumerable<T>
         queue[j] = temp;
     }
 
-    // Для foreach
     public IEnumerator<T> GetEnumerator()
     {
         for (int i = 0; i < size; i++)
@@ -360,7 +358,7 @@ class Program
         // 1. Тест конструктора по умолчанию
         Console.WriteLine("\n1. Тест конструктора по умолчанию:");
         var queue1 = new MyPriorityQueue<int>();
-        Console.WriteLine($"Размер: {queue1.Size()}, Пустая: {queue1.IsEmpty()}");
+        Console.WriteLine($"Размер: {queue1.Size()}, Проверка на пустоту: {queue1.IsEmpty()}");
 
         // 2. Тест добавления элементов
         Console.WriteLine("\n2. Тест добавления элементов:");
@@ -369,7 +367,7 @@ class Program
         queue1.Add(20);
         queue1.Add(3);
         queue1.Add(15);
-        Console.WriteLine($"Размер: {queue1.Size()}, Голова: {queue1.Peek()}");
+        Console.WriteLine($"Размер: {queue1.Size()}, Верхушка: {queue1.Peek()}");
 
         // 3. Тест Peek и Poll
         Console.WriteLine("\n3. Тест Peek и Poll:");
@@ -382,7 +380,7 @@ class Program
         Console.WriteLine("\n4. Тест конструктора из массива:");
         int[] array = { 30, 10, 40, 5, 25 };
         var queue2 = new MyPriorityQueue<int>(array);
-        Console.WriteLine($"Размер: {queue2.Size()}, Голова: {queue2.Peek()}");
+        Console.WriteLine($"Размер: {queue2.Size()}, Верхушка: {queue2.Peek()}");
 
         // 5. Тест Contains
         Console.WriteLine("\n5. Тест Contains:");
@@ -407,13 +405,13 @@ class Program
         Console.WriteLine("\n8. Тест конструктора с компаратором:");
         var queue3 = new MyPriorityQueue<int>(10, CompareInt);
         queue3.AddAll(new int[] { 100, 50, 75, 25 });
-        Console.WriteLine($"Размер: {queue3.Size()}, Голова: {queue3.Peek()}");
+        Console.WriteLine($"Размер: {queue3.Size()}, Верхушка: {queue3.Peek()}");
 
         // 9. Тест конструктора копирования
         Console.WriteLine("\n9. Тест конструктора копирования:");
         var queue4 = new MyPriorityQueue<int>(queue3);
         Console.WriteLine($"Размер оригинала: {queue3.Size()}, Размер копии: {queue4.Size()}");
-        Console.WriteLine($"Peek оригинала: {queue3.Peek()}, Peek копии: {queue4.Peek()}");
+        Console.WriteLine($"Верхушка оригинала: {queue3.Peek()}, Верхушка копии: {queue4.Peek()}");
 
         // 10. Тест Element() и исключения
         Console.WriteLine("\n10. Тест Element() и исключения:");
@@ -447,7 +445,7 @@ class Program
         Console.WriteLine("\n12. Тест Clear:");
         Console.WriteLine($"Размер до Clear: {queue2.Size()}");
         queue2.Clear();
-        Console.WriteLine($"Размер после Clear: {queue2.Size()}, Пустая: {queue2.IsEmpty()}");
+        Console.WriteLine($"Размер после Clear: {queue2.Size()}, Проверка на пустоту: {queue2.IsEmpty()}");
 
         // 13. Тест ContainsAll
         Console.WriteLine("\n13. Тест ContainsAll:");
@@ -482,9 +480,9 @@ class Program
         // 17. Тест с пользовательским типом
         Console.WriteLine("\n17. Тест с пользовательским типом:");
         var personQueue = new MyPriorityQueue<Person>();
-        personQueue.Add(new Person("Иван", 30));
-        personQueue.Add(new Person("Анна", 25));
-        personQueue.Add(new Person("Петр", 35));
+        personQueue.Add(new Person("Абв", 30));
+        personQueue.Add(new Person("Где", 25));
+        personQueue.Add(new Person("Ёжз", 35));
 
         Console.WriteLine($"Первый по возрасту: {personQueue.Peek()}");
 
@@ -495,7 +493,7 @@ class Program
             Console.Write($"{item} ");
         Console.WriteLine();
 
-        Console.WriteLine("\n=== Все тесты завершены ===");
+        Console.WriteLine("\nВсе тесты завершены");
     }
 
     class Person : IComparable<Person>
