@@ -43,8 +43,7 @@ public class MyPriorityQueue<T> : IEnumerable<T>
     }
 
     // 4) Конструктор с ёмкостью и компаратором
-    public MyPriorityQueue(int initialCapacity, PriorityQueueComparer<T> comparator)
-        : this(initialCapacity)
+    public MyPriorityQueue(int initialCapacity, PriorityQueueComparer<T> comparator) : this(initialCapacity)
     {
         this.comparator = comparator ?? DefaultComparer;
     }
@@ -347,172 +346,172 @@ public class MyPriorityQueue<T> : IEnumerable<T>
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
-class Program
-{
-    static int CompareInt(int x, int y) => x.CompareTo(y);
-
-    static void Main()
-    {
-        Console.WriteLine("Тестирование");
-
-        // 1. Тест конструктора по умолчанию
-        Console.WriteLine("\n1. Тест конструктора по умолчанию:");
-        var queue1 = new MyPriorityQueue<int>();
-        Console.WriteLine($"Размер: {queue1.Size()}, Проверка на пустоту: {queue1.IsEmpty()}");
-
-        // 2. Тест добавления элементов
-        Console.WriteLine("\n2. Тест добавления элементов:");
-        queue1.Add(10);
-        queue1.Add(5);
-        queue1.Add(20);
-        queue1.Add(3);
-        queue1.Add(15);
-        Console.WriteLine($"Размер: {queue1.Size()}, Верхушка: {queue1.Peek()}");
-
-        // 3. Тест Peek и Poll
-        Console.WriteLine("\n3. Тест Peek и Poll:");
-        Console.WriteLine($"Peek: {queue1.Peek()}");
-        Console.WriteLine($"Poll: {queue1.Poll()}");
-        Console.WriteLine($"После Poll Peek: {queue1.Peek()}");
-        Console.WriteLine($"Размер: {queue1.Size()}");
-
-        // 4. Тест конструктора из массива
-        Console.WriteLine("\n4. Тест конструктора из массива:");
-        int[] array = { 30, 10, 40, 5, 25 };
-        var queue2 = new MyPriorityQueue<int>(array);
-        Console.WriteLine($"Размер: {queue2.Size()}, Верхушка: {queue2.Peek()}");
-
-        // 5. Тест Contains
-        Console.WriteLine("\n5. Тест Contains:");
-        Console.WriteLine($"Содержит 10: {queue2.Contains(10)}");
-        Console.WriteLine($"Содержит 99: {queue2.Contains(99)}");
-
-        // 6. Тест Remove
-        Console.WriteLine("\n6. Тест Remove:");
-        Console.WriteLine($"Удалить 10: {queue2.Remove(10)}");
-        Console.WriteLine($"Содержит 10 после удаления: {queue2.Contains(10)}");
-        Console.WriteLine($"Размер после удаления: {queue2.Size()}");
-
-        // 7. Тест ToArray
-        Console.WriteLine("\n7. Тест ToArray:");
-        int[] resultArray = queue2.ToArray(new int[0]);
-        Console.Write("Элементы в массиве: ");
-        foreach (var item in resultArray)
-            Console.Write($"{item} ");
-        Console.WriteLine();
-
-        // 8. Тест конструктора с компаратором
-        Console.WriteLine("\n8. Тест конструктора с компаратором:");
-        var queue3 = new MyPriorityQueue<int>(10, CompareInt);
-        queue3.AddAll(new int[] { 100, 50, 75, 25 });
-        Console.WriteLine($"Размер: {queue3.Size()}, Верхушка: {queue3.Peek()}");
-
-        // 9. Тест конструктора копирования
-        Console.WriteLine("\n9. Тест конструктора копирования:");
-        var queue4 = new MyPriorityQueue<int>(queue3);
-        Console.WriteLine($"Размер оригинала: {queue3.Size()}, Размер копии: {queue4.Size()}");
-        Console.WriteLine($"Верхушка оригинала: {queue3.Peek()}, Верхушка копии: {queue4.Peek()}");
-
-        // 10. Тест Element() и исключения
-        Console.WriteLine("\n10. Тест Element() и исключения:");
-        try
-        {
-            var emptyQueue = new MyPriorityQueue<int>();
-            Console.WriteLine($"Element на пустой очереди: {emptyQueue.Element()}");
-        }
-        catch (InvalidOperationException ex)
-        {
-            Console.WriteLine($"Ожидаемое исключение: {ex.Message}");
-        }
-
-        // 11. Тест Offer
-        Console.WriteLine("\n11. Тест Offer:");
-        Console.WriteLine($"Offer(100): {queue1.Offer(100)}");
-        Console.WriteLine($"Offer(null) на очереди с ссылочным типом:");
-
-        var stringQueue = new MyPriorityQueue<string>();
-        try
-        {
-            stringQueue.Add(null);
-        }
-        catch (ArgumentNullException ex)
-        {
-            Console.WriteLine($"Ожидаемое исключение при Add(null): {ex.ParamName}");
-        }
-        Console.WriteLine($"Offer(null): {stringQueue.Offer(null)}");
-
-        // 12. Тест Clear
-        Console.WriteLine("\n12. Тест Clear:");
-        Console.WriteLine($"Размер до Clear: {queue2.Size()}");
-        queue2.Clear();
-        Console.WriteLine($"Размер после Clear: {queue2.Size()}, Проверка на пустоту: {queue2.IsEmpty()}");
-
-        // 13. Тест ContainsAll
-        Console.WriteLine("\n13. Тест ContainsAll:");
-        var queue5 = new MyPriorityQueue<int>(new int[] { 1, 2, 3, 4, 5 });
-        Console.WriteLine($"Содержит [2,3,4]: {queue5.ContainsAll(new int[] { 2, 3, 4 })}");
-        Console.WriteLine($"Содержит [2,3,6]: {queue5.ContainsAll(new int[] { 2, 3, 6 })}");
-
-        // 14. Тест RemoveAll
-        Console.WriteLine("\n14. Тест RemoveAll:");
-        Console.WriteLine($"Удалить [2,4,6]: {queue5.RemoveAll(new int[] { 2, 4, 6 })}");
-        Console.WriteLine($"Размер после RemoveAll: {queue5.Size()}");
-
-        // 15. Тест RetainAll
-        Console.WriteLine("\n15. Тест RetainAll:");
-        var queue6 = new MyPriorityQueue<int>(new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
-        Console.WriteLine($"Оставить только [3,6,9]: {queue6.RetainAll(new int[] { 3, 6, 9 })}");
-        Console.WriteLine($"Размер после RetainAll: {queue6.Size()}");
-        Console.Write("Оставшиеся элементы: ");
-        foreach (var item in queue6)
-            Console.Write($"{item} ");
-        Console.WriteLine();
-
-        // 16. Тест увеличения емкости
-        Console.WriteLine("\n16. Тест увеличения емкости (добавление 100 элементов):");
-        var queue7 = new MyPriorityQueue<int>();
-        for (int i = 0; i < 100; i++)
-        {
-            queue7.Add(i);
-        }
-        Console.WriteLine($"Размер: {queue7.Size()}");
-
-        // 17. Тест с пользовательским типом
-        Console.WriteLine("\n17. Тест с пользовательским типом:");
-        var personQueue = new MyPriorityQueue<Person>();
-        personQueue.Add(new Person("Абв", 30));
-        personQueue.Add(new Person("Где", 25));
-        personQueue.Add(new Person("Ёжз", 35));
-
-        Console.WriteLine($"Первый по возрасту: {personQueue.Peek()}");
-
-        // 18. Тест перечисления
-        Console.WriteLine("\n18. Тест перечисления (foreach):");
-        Console.Write("Все элементы queue1: ");
-        foreach (var item in queue1)
-            Console.Write($"{item} ");
-        Console.WriteLine();
-
-        Console.WriteLine("\nВсе тесты завершены");
-    }
-
-    class Person : IComparable<Person>
-    {
-        public string Name { get; }
-        public int Age { get; }
-
-        public Person(string name, int age)
-        {
-            Name = name;
-            Age = age;
-        }
-
-        public int CompareTo(Person other)
-        {
-            if (other == null) return 1;
-            return Age.CompareTo(other.Age);
-        }
-
-        public override string ToString() => $"{Name} ({Age})";
-    }
-}
+//class Program
+//{
+//    static int CompareInt(int x, int y) => x.CompareTo(y);
+//
+//    static void Main()
+//    {
+//        Console.WriteLine("Тестирование");
+//
+//        // 1. Тест конструктора по умолчанию
+//        Console.WriteLine("\n1. Тест конструктора по умолчанию:");
+//        var queue1 = new MyPriorityQueue<int>();
+//        Console.WriteLine($"Размер: {queue1.Size()}, Проверка на пустоту: {queue1.IsEmpty()}");
+//
+//        // 2. Тест добавления элементов
+//        Console.WriteLine("\n2. Тест добавления элементов:");
+//        queue1.Add(10);
+//        queue1.Add(5);
+//        queue1.Add(20);
+//        queue1.Add(3);
+//        queue1.Add(15);
+//        Console.WriteLine($"Размер: {queue1.Size()}, Верхушка: {queue1.Peek()}");
+//
+//        // 3. Тест Peek и Poll
+//        Console.WriteLine("\n3. Тест Peek и Poll:");
+//        Console.WriteLine($"Peek: {queue1.Peek()}");
+//        Console.WriteLine($"Poll: {queue1.Poll()}");
+//        Console.WriteLine($"После Poll Peek: {queue1.Peek()}");
+//        Console.WriteLine($"Размер: {queue1.Size()}");
+//
+//        // 4. Тест конструктора из массива
+//        Console.WriteLine("\n4. Тест конструктора из массива:");
+//        int[] array = { 30, 10, 40, 5, 25 };
+//        var queue2 = new MyPriorityQueue<int>(array);
+//        Console.WriteLine($"Размер: {queue2.Size()}, Верхушка: {queue2.Peek()}");
+//
+//        // 5. Тест Contains
+//        Console.WriteLine("\n5. Тест Contains:");
+//        Console.WriteLine($"Содержит 10: {queue2.Contains(10)}");
+//        Console.WriteLine($"Содержит 99: {queue2.Contains(99)}");
+//
+//        // 6. Тест Remove
+//        Console.WriteLine("\n6. Тест Remove:");
+//        Console.WriteLine($"Удалить 10: {queue2.Remove(10)}");
+//        Console.WriteLine($"Содержит 10 после удаления: {queue2.Contains(10)}");
+//        Console.WriteLine($"Размер после удаления: {queue2.Size()}");
+//
+//        // 7. Тест ToArray
+//        Console.WriteLine("\n7. Тест ToArray:");
+//        int[] resultArray = queue2.ToArray(new int[0]);
+//        Console.Write("Элементы в массиве: ");
+//        foreach (var item in resultArray)
+//            Console.Write($"{item} ");
+//        Console.WriteLine();
+//
+//        // 8. Тест конструктора с компаратором
+//        Console.WriteLine("\n8. Тест конструктора с компаратором:");
+//        var queue3 = new MyPriorityQueue<int>(10, CompareInt);
+//        queue3.AddAll(new int[] { 100, 50, 75, 25 });
+//        Console.WriteLine($"Размер: {queue3.Size()}, Верхушка: {queue3.Peek()}");
+//
+//        // 9. Тест конструктора копирования
+//        Console.WriteLine("\n9. Тест конструктора копирования:");
+//        var queue4 = new MyPriorityQueue<int>(queue3);
+//        Console.WriteLine($"Размер оригинала: {queue3.Size()}, Размер копии: {queue4.Size()}");
+//        Console.WriteLine($"Верхушка оригинала: {queue3.Peek()}, Верхушка копии: {queue4.Peek()}");
+//
+//        // 10. Тест Element() и исключения
+//        Console.WriteLine("\n10. Тест Element() и исключения:");
+//        try
+//        {
+//            var emptyQueue = new MyPriorityQueue<int>();
+//            Console.WriteLine($"Element на пустой очереди: {emptyQueue.Element()}");
+//        }
+//        catch (InvalidOperationException ex)
+//        {
+//            Console.WriteLine($"Ожидаемое исключение: {ex.Message}");
+//        }
+//
+//        // 11. Тест Offer
+//        Console.WriteLine("\n11. Тест Offer:");
+//        Console.WriteLine($"Offer(100): {queue1.Offer(100)}");
+//        Console.WriteLine($"Offer(null) на очереди с ссылочным типом:");
+//
+//        var stringQueue = new MyPriorityQueue<string>();
+//        try
+//        {
+//            stringQueue.Add(null);
+//        }
+//        catch (ArgumentNullException ex)
+//        {
+//            Console.WriteLine($"Ожидаемое исключение при Add(null): {ex.ParamName}");
+//        }
+//        Console.WriteLine($"Offer(null): {stringQueue.Offer(null)}");
+//
+//        // 12. Тест Clear
+//        Console.WriteLine("\n12. Тест Clear:");
+//        Console.WriteLine($"Размер до Clear: {queue2.Size()}");
+//        queue2.Clear();
+//        Console.WriteLine($"Размер после Clear: {queue2.Size()}, Проверка на пустоту: {queue2.IsEmpty()}");
+//
+//        // 13. Тест ContainsAll
+//        Console.WriteLine("\n13. Тест ContainsAll:");
+//        var queue5 = new MyPriorityQueue<int>(new int[] { 1, 2, 3, 4, 5 });
+//        Console.WriteLine($"Содержит [2,3,4]: {queue5.ContainsAll(new int[] { 2, 3, 4 })}");
+//        Console.WriteLine($"Содержит [2,3,6]: {queue5.ContainsAll(new int[] { 2, 3, 6 })}");
+//
+//        // 14. Тест RemoveAll
+//        Console.WriteLine("\n14. Тест RemoveAll:");
+//        Console.WriteLine($"Удалить [2,4,6]: {queue5.RemoveAll(new int[] { 2, 4, 6 })}");
+//        Console.WriteLine($"Размер после RemoveAll: {queue5.Size()}");
+//
+//        // 15. Тест RetainAll
+//        Console.WriteLine("\n15. Тест RetainAll:");
+//        var queue6 = new MyPriorityQueue<int>(new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+//        Console.WriteLine($"Оставить только [3,6,9]: {queue6.RetainAll(new int[] { 3, 6, 9 })}");
+//        Console.WriteLine($"Размер после RetainAll: {queue6.Size()}");
+//        Console.Write("Оставшиеся элементы: ");
+//        foreach (var item in queue6)
+//            Console.Write($"{item} ");
+//        Console.WriteLine();
+//
+//        // 16. Тест увеличения емкости
+//        Console.WriteLine("\n16. Тест увеличения емкости (добавление 100 элементов):");
+//        var queue7 = new MyPriorityQueue<int>();
+//        for (int i = 0; i < 100; i++)
+//        {
+//            queue7.Add(i);
+//        }
+//        Console.WriteLine($"Размер: {queue7.Size()}");
+//
+//        // 17. Тест с пользовательским типом
+//        Console.WriteLine("\n17. Тест с пользовательским типом:");
+//        var personQueue = new MyPriorityQueue<Person>();
+//        personQueue.Add(new Person("Абв", 30));
+//        personQueue.Add(new Person("Где", 25));
+//        personQueue.Add(new Person("Ёжз", 35));
+//
+//        Console.WriteLine($"Первый по возрасту: {personQueue.Peek()}");
+//
+//        // 18. Тест перечисления
+//        Console.WriteLine("\n18. Тест перечисления (foreach):");
+//        Console.Write("Все элементы queue1: ");
+//        foreach (var item in queue1)
+//            Console.Write($"{item} ");
+//        Console.WriteLine();
+//
+//        Console.WriteLine("\nВсе тесты завершены");
+//    }
+//
+//    class Person : IComparable<Person>
+//    {
+//        public string Name { get; }
+//        public int Age { get; }
+//
+//        public Person(string name, int age)
+//        {
+//            Name = name;
+//            Age = age;
+//        }
+//
+//        public int CompareTo(Person other)
+//        {
+//            if (other == null) return 1;
+//            return Age.CompareTo(other.Age);
+//        }
+//
+//        public override string ToString() => $"{Name} ({Age})";
+//    }
+//}
