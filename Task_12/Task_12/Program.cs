@@ -7,6 +7,64 @@ using System.Threading.Tasks;
 
 namespace Task_12
 {
+    public class MyStack<T> : MyVector<T>
+    {
+        public MyStack()
+            : base()
+        {
+        }
+
+        public MyStack(int initialCapacity)
+            : base(initialCapacity)
+        {
+        }
+
+        public void Push(T item)
+        {
+            Add(item);
+        }
+
+        public T Pop()
+        {
+            if (IsEmpty())
+            {
+                throw new InvalidOperationException("Стек пуст.");
+            }
+
+            T top = LastElement();
+            Remove(Size() - 1);
+            return top;
+        }
+
+        public T Peek()
+        {
+            if (IsEmpty())
+            {
+                throw new InvalidOperationException("Стек пуст.");
+            }
+
+            return LastElement();
+        }
+
+        public bool Empty()
+        {
+            return IsEmpty();
+        }
+
+        public int Search(T item)
+        {
+            for (int i = Size() - 1; i >= 0; i--)
+            {
+                if (object.Equals(Get(i), item))
+                {
+                    return Size() - i;
+                }
+            }
+            return -1;
+        }
+    }
+
+
     internal class Program
     {
         static void Main(string[] args)
@@ -33,117 +91,6 @@ namespace Task_12
             Console.WriteLine($"Проверка на путоту: {stack.Empty()}");
 
             Console.ReadKey();
-        }
-    }
-
-    public class MyVector<T>
-    {
-        protected List<T> miniVector;
-
-        public MyVector()
-        {
-            miniVector = new List<T>();
-        }
-
-        public void Add(T item)
-        {
-            miniVector.Add(item);
-        }
-
-        public void RemoveAt(int index)
-        {
-            if (index < 0 || index >= miniVector.Count)
-            {
-                throw new ArgumentOutOfRangeException(nameof(index));
-            }
-
-            miniVector.RemoveAt(index);
-        }
-
-        public T this[int index]
-        {
-            get //возврат
-            {
-                if (index < 0 || index >= miniVector.Count)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(index));
-                }
-                return miniVector[index];
-            }
-            set //установка
-            {
-                if (index < 0 || index >= miniVector.Count)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(index));
-                }
-
-                miniVector[index] = value;
-            }
-        }
-
-        public int Count => miniVector.Count;
-
-        public bool Contains(T item)
-        {
-            return miniVector.Contains(item);
-        }
-
-        public int IndexOf(T item)
-        {
-            return miniVector.IndexOf(item);
-        }
-    }
-
-    public class MyStack<T> : MyVector<T>
-    {
-        public void Push(T item) //пуш
-        {
-            miniVector.Add(item);
-        }
-
-        
-        public T Pop() //извлечение верхушки
-        {
-            if (Empty())
-            {
-                throw new InvalidOperationException("Стек пуст");
-            }
-
-            T item = miniVector[miniVector.Count - 1];
-            miniVector.RemoveAt(miniVector.Count - 1);
-            return item;
-        }
-
-        
-        public T Peek() //чек верхнего элемента
-        {
-            if (Empty())
-                throw new InvalidOperationException("Стек пуст");
-
-            return miniVector[miniVector.Count - 1];
-        }
-
-        
-        public bool Empty() //чек на пустоту
-        {
-            if(miniVector.Count == 0)
-            {
-                return true;
-            }
-            return false;
-        }
-
-        
-        public int Search(T item) //нахождение глубины
-        {
-            for (int i = miniVector.Count - 1; i >= 0; i--)
-            {
-                if (miniVector[i].Equals(item))
-                {
-                    return miniVector.Count - i;
-                }
-            }
-            return -1;
         }
     }
 }
