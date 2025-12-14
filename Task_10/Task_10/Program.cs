@@ -17,9 +17,9 @@ namespace Task_10
         public MyVector(int initialCapacity, int capacityIncrement)
         {
             if (initialCapacity < 0)
-                throw new ArgumentException("Initial capacity cannot be negative");
+                throw new ArgumentException("Начальная размерность не может быть отрицательной");
             if (capacityIncrement < 0)
-                throw new ArgumentException("Capacity increment cannot be negative");
+                throw new ArgumentException("Прирост количества элементов не может быть отрицательным");
 
             elementData = new T[initialCapacity];
             elementCount = 0;
@@ -284,7 +284,7 @@ namespace Task_10
         public MyVector<T> SubList(int fromIndex, int toIndex)
         {
             if (fromIndex < 0 || toIndex > elementCount || fromIndex > toIndex)
-                throw new ArgumentException("Invalid indices");
+                throw new ArgumentException("Недопустимые индексы");
 
             MyVector<T> sub = new MyVector<T>(toIndex - fromIndex, capacityIncrement);
             for (int i = fromIndex; i < toIndex; i++)
@@ -296,7 +296,7 @@ namespace Task_10
         public T FirstElement()
         {
             if (elementCount == 0)
-                throw new InvalidOperationException("Vector is empty");
+                throw new InvalidOperationException("Вектор пуст");
             return elementData[0];
         }
 
@@ -304,7 +304,7 @@ namespace Task_10
         public T LastElement()
         {
             if (elementCount == 0)
-                throw new InvalidOperationException("Vector is empty");
+                throw new InvalidOperationException("Вектор пуст");
             return elementData[elementCount - 1];
         }
 
@@ -318,7 +318,7 @@ namespace Task_10
         public void RemoveRange(int begin, int end)
         {
             if (begin < 0 || end > elementCount || begin > end)
-                throw new ArgumentException("Invalid range");
+                throw new ArgumentException("Недопустимый диапазон");
 
             int count = end - begin;
             if (count > 0)
@@ -390,9 +390,6 @@ namespace Task_10
             // Проверка на пустоту
             Console.WriteLine("\nВектор пуст? " + cars.IsEmpty());
 
-            PrintVector(cars);
-            cars.RemoveRange(1, 4);
-            PrintVector(cars);
 
             Console.ReadKey();
         }
