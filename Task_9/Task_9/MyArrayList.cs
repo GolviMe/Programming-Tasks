@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Task_8
+namespace Task_9
 {
     public class MyArrayList<T>
     {
@@ -285,83 +285,4 @@ namespace Task_8
             return sub;
         }
     }
-
-    internal class Program
-    {
-        static void Main(string[] args)
-        {
-            MyArrayList<string> fruits = new MyArrayList<string>();
-
-            // Проверка на пустоту
-            Console.WriteLine("\nСписок пуст? " + fruits.IsEmpty() + '\n');
-
-            // Добавление фруктов
-            fruits.Add("Яблоко");
-            fruits.Add("Банан");
-            fruits.Add("Апельсин");
-            fruits.Add("Груша");
-            fruits.Add("Киви");
-            fruits.Add("Манго");
-            fruits.Add("Ананас");
-            fruits.Add("Виноград");
-            fruits.Add("Банан");
-
-            Console.WriteLine("После добавления фруктов:");
-            PrintList(fruits);
-            Console.WriteLine("Размер списка: " + fruits.Size());
-
-            // Удаление указанных фруктов
-            fruits.Remove("Киви");
-            fruits.Remove("Ананас");
-            Console.WriteLine("\nПосле удаления 'Киви' и 'Ананас':");
-            PrintList(fruits);
-
-            // Добавление в конец персика )
-            fruits.Add("Персик");
-            Console.WriteLine("\nПосле добавления 'Персик' в конец:");
-            PrintList(fruits);
-
-            // Поиск элемента
-            Console.WriteLine("\nИндекс 'Банан': " + fruits.IndexOf("Банан"));
-            Console.WriteLine("Содержит ли 'Манго'? " + fruits.Contains("Манго"));
-
-            // Получение и замена по индексу
-            Console.WriteLine("\nЭлемент на позиции 2: " + fruits.Get(2));
-            string old = fruits.Set(2, "Лимон");
-            Console.WriteLine("Старое значение на позиции 2 было: " + old);
-            Console.WriteLine("После замены:");
-            PrintList(fruits);
-
-            // Удалить все элементы кроме:
-            string[] keep = { "Банан", "Яблоко", "Персик", "Лимон" };
-            fruits.RetainAll(keep);
-            Console.WriteLine("\nПосле RetainAll (оставить только Банан, Яблоко, Персик, Лимон):");
-            PrintList(fruits);
-            Console.WriteLine("Размер: " + fruits.Size());
-
-            // Проверка на пустоту
-            Console.WriteLine("\nСписок пуст? " + fruits.IsEmpty());
-
-            Console.ReadKey();
-        }
-
-
-        static void PrintList(MyArrayList<string> list)
-        {
-            if (list.IsEmpty())
-            {
-                Console.WriteLine("Список пуст");
-                return;
-            }
-
-            for (int i = 0; i < list.Size(); i++)
-            {
-                Console.Write(list.Get(i));
-                if (i < list.Size() - 1) Console.Write(", ");
-            }
-            Console.WriteLine();
-            Console.WriteLine("Size: " + list.Size());
-        }
-    }
-
 }
