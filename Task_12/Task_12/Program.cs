@@ -19,11 +19,13 @@ namespace Task_12
         {
         }
 
+        // Помещение элемента на верхушку стека
         public void Push(T item)
         {
             Add(item);
         }
 
+        // Извлечение верхнего элемента из верхушки стека
         public T Pop()
         {
             if (IsEmpty())
@@ -36,6 +38,7 @@ namespace Task_12
             return top;
         }
 
+        // Возвращение верхнего элемента из верхушки стека
         public T Peek()
         {
             if (IsEmpty())
@@ -46,11 +49,13 @@ namespace Task_12
             return LastElement();
         }
 
+        // Проверка на пустоту
         public bool Empty()
         {
             return IsEmpty();
         }
 
+        // Поиск глубины объекта
         public int Search(T item)
         {
             for (int i = Size() - 1; i >= 0; i--)
