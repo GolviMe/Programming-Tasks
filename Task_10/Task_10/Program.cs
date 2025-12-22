@@ -8,9 +8,9 @@ namespace Task_10
 {
     public class MyVector<T>
     {
-        private T[] elementData;         // внутренний массив для хранения элементов
-        private int elementCount;        // текущее количество элементов (size)
-        private int capacityIncrement;   // на сколько увеличивать ёмкость при нехватке
+        private T[] elementData; // внутренний массив для хранения элементов
+        private int elementCount; // текущее количество элементов (size)
+        private int capacityIncrement; // на сколько увеличивать ёмкость при нехватке
         private const int DEFAULT_CAPACITY = 10;
 
         // 1. Конструктор для создания пустого вектора с начальной ёмкостью initialCapacity и значением приращения ёмкости capacityIncrement.

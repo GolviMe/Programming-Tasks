@@ -9,13 +9,11 @@ namespace Task_12
 {
     public class MyStack<T> : MyVector<T>
     {
-        public MyStack()
-            : base()
+        public MyStack() : base()
         {
         }
 
-        public MyStack(int initialCapacity)
-            : base(initialCapacity)
+        public MyStack(int initialCapacity) : base(initialCapacity)
         {
         }
 
