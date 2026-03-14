@@ -545,7 +545,7 @@ namespace Task_18
 
             Console.WriteLine($"Первый ключ: {map.FirstKey()}");
             Console.WriteLine($"Последний ключ: {map.LastKey()}");
-            
+
             Console.WriteLine("Все ключи: " + string.Join(", ", map.KeySet()));
 
             Console.WriteLine($"Содержит ключ 3: {map.ContainsKey(3)}");

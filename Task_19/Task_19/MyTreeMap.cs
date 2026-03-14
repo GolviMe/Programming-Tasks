@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Task_18
+namespace Task_19
 {
     public class MyTreeMap<K, V>
     {
@@ -28,6 +28,10 @@ namespace Task_18
         private IComparer<K> comparator;
         private Node root;
         private int size;
+        public IComparer<K> Comparator
+        {
+            get { return comparator; }
+        }
 
         // 1) Конструктор по умолчанию (естественный порядок)
         public MyTreeMap()
@@ -526,38 +530,6 @@ namespace Task_18
             Node max = FindMax(root);
             return new KeyValuePair<K, V>(max.Key, max.Value);
         }
-    }
-
-    internal class Program
-    {
-        static void Main()
-        {
-            MyTreeMap<int, string> map = new MyTreeMap<int, string>();
-
-            map.Put(3, "три");
-            map.Put(1, "один");
-            map.Put(4, "четыре");
-            map.Put(2, "два");
-
-            Console.WriteLine($"Значение для ключа 2: {map.Get(2)}");
-
-            Console.WriteLine($"Размер: {map.Size()}");
-
-            Console.WriteLine($"Первый ключ: {map.FirstKey()}");
-            Console.WriteLine($"Последний ключ: {map.LastKey()}");
-            
-            Console.WriteLine("Все ключи: " + string.Join(", ", map.KeySet()));
-
-            Console.WriteLine($"Содержит ключ 3: {map.ContainsKey(3)}");
-            Console.WriteLine($"Содержит значение 'два': {map.ContainsValue("два")}");
-
-            Console.WriteLine($"Ключ меньше 3: {map.LowerKey(3)}");
-            Console.WriteLine($"Ключ больше 3: {map.HigherKey(3)}");
-
-            map.Remove(2);
-            Console.WriteLine($"После удаления ключа 2: {string.Join(", ", map.KeySet())}");
-        }
-
     }
 }
 
