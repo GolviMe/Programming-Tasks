@@ -1,97 +1,772 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Task_19
+namespace MyCollections
 {
-    using System;
-    using System.Collections.Generic;
-
-    public class MyTreeSet<T> : IEnumerable<T>
+    // Цвет узла красно-черного дерева
+    public enum Color
     {
-        // Фиктивный объект для значений в карте
-        private static readonly object PRESENT = new object();
+        Red,
+        Black
+    }
 
-        // Внутренняя карта для хранения элементов (ключи — элементы множества)
-        private MyTreeMap<T, object> map;
+    // Узел красно-черного дерева
+    public class TreeNode<K, V> where K : IComparable<K>
+    {
+        public K Key { get; set; }
+        public V Value { get; set; }
+        public Color Color { get; set; }
+        public TreeNode<K, V> Left { get; set; }
+        public TreeNode<K, V> Right { get; set; }
+        public TreeNode<K, V> Parent { get; set; }
 
-        // 1) Конструктор по умолчанию (естественный порядок)
-        public MyTreeSet()
+        public TreeNode(K key, V value, Color color)
         {
-            map = new MyTreeMap<T, object>();
+            Key = key;
+            Value = value;
+            Color = color;
+            Left = null;
+            Right = null;
+            Parent = null;
+        }
+    }
+
+    // Реализация красно-черного дерева
+    public class MyTreeMap<K, V> where K : IComparable<K>
+    {
+        private TreeNode<K, V> root;
+        private IComparer<K> comparator;
+        private int size;
+
+        public MyTreeMap()
+        {
+            comparator = Comparer<K>.Default;
+            root = null;
+            size = 0;
         }
 
-        // 2) Конструктор с готовой картой
-        public MyTreeSet(MyTreeMap<T, object> m)
+        public MyTreeMap(IComparer<K> comparator)
         {
-            map = m ?? throw new ArgumentNullException(nameof(m));
+            this.comparator = comparator ?? Comparer<K>.Default;
+            root = null;
+            size = 0;
+        }
+
+        public int Size()
+        {
+            return size;
+        }
+
+        public bool IsEmpty()
+        {
+            return size == 0;
+        }
+
+        public void Clear()
+        {
+            root = null;
+            size = 0;
+        }
+
+        public bool ContainsKey(K key)
+        {
+            return GetNode(key) != null;
+        }
+
+        public V Get(K key)
+        {
+            TreeNode<K, V> node = GetNode(key);
+            return node != null ? node.Value : default(V);
+        }
+
+        public V Put(K key, V value)
+        {
+            if (root == null)
+            {
+                root = new TreeNode<K, V>(key, value, Color.Black);
+                size++;
+                return default(V);
+            }
+
+            TreeNode<K, V> parent = null;
+            TreeNode<K, V> current = root;
+            int cmp = 0;
+
+            while (current != null)
+            {
+                parent = current;
+                cmp = Compare(key, current.Key);
+
+                if (cmp < 0)
+                    current = current.Left;
+                else if (cmp > 0)
+                    current = current.Right;
+                else
+                {
+                    V oldValue = current.Value;
+                    current.Value = value;
+                    return oldValue;
+                }
+            }
+
+            TreeNode<K, V> newNode = new TreeNode<K, V>(key, value, Color.Red);
+            newNode.Parent = parent;
+
+            if (cmp < 0)
+                parent.Left = newNode;
+            else
+                parent.Right = newNode;
+
+            FixAfterInsertion(newNode);
+            size++;
+            return default(V);
+        }
+
+        public V Remove(K key)
+        {
+            TreeNode<K, V> node = GetNode(key);
+            if (node == null)
+                return default(V);
+
+            V oldValue = node.Value;
+            DeleteNode(node);
+            return oldValue;
+        }
+
+        public TreeNode<K, V> GetFirstNode()
+        {
+            if (root == null)
+                return null;
+
+            TreeNode<K, V> current = root;
+            while (current.Left != null)
+                current = current.Left;
+
+            return current;
+        }
+
+        public TreeNode<K, V> GetLastNode()
+        {
+            if (root == null)
+                return null;
+
+            TreeNode<K, V> current = root;
+            while (current.Right != null)
+                current = current.Right;
+
+            return current;
+        }
+
+        public TreeNode<K, V> GetCeilingNode(K key)
+        {
+            TreeNode<K, V> current = root;
+            TreeNode<K, V> result = null;
+
+            while (current != null)
+            {
+                int cmp = Compare(key, current.Key);
+
+                if (cmp <= 0)
+                {
+                    result = current;
+                    current = current.Left;
+                }
+                else
+                {
+                    current = current.Right;
+                }
+            }
+
+            return result;
+        }
+
+        public TreeNode<K, V> GetFloorNode(K key)
+        {
+            TreeNode<K, V> current = root;
+            TreeNode<K, V> result = null;
+
+            while (current != null)
+            {
+                int cmp = Compare(key, current.Key);
+
+                if (cmp >= 0)
+                {
+                    result = current;
+                    current = current.Right;
+                }
+                else
+                {
+                    current = current.Left;
+                }
+            }
+
+            return result;
+        }
+
+        public TreeNode<K, V> GetHigherNode(K key)
+        {
+            TreeNode<K, V> current = root;
+            TreeNode<K, V> result = null;
+
+            while (current != null)
+            {
+                int cmp = Compare(key, current.Key);
+
+                if (cmp < 0)
+                {
+                    result = current;
+                    current = current.Left;
+                }
+                else
+                {
+                    current = current.Right;
+                }
+            }
+
+            return result;
+        }
+
+        public TreeNode<K, V> GetLowerNode(K key)
+        {
+            TreeNode<K, V> current = root;
+            TreeNode<K, V> result = null;
+
+            while (current != null)
+            {
+                int cmp = Compare(key, current.Key);
+
+                if (cmp > 0)
+                {
+                    result = current;
+                    current = current.Right;
+                }
+                else
+                {
+                    current = current.Left;
+                }
+            }
+
+            return result;
+        }
+
+        public List<K> GetKeysInOrder()
+        {
+            List<K> keys = new List<K>();
+            InOrderTraversal(root, keys);
+            return keys;
+        }
+
+        public List<K> GetKeysInOrder(TreeNode<K, V> startNode)
+        {
+            List<K> keys = new List<K>();
+            InOrderTraversal(startNode, keys);
+            return keys;
+        }
+
+        public List<K> GetKeysInRange(K from, bool fromInclusive, K to, bool toInclusive)
+        {
+            List<K> keys = new List<K>();
+            InOrderTraversalRange(root, from, fromInclusive, to, toInclusive, keys);
+            return keys;
+        }
+
+        public List<K> GetKeysHead(K to, bool inclusive)
+        {
+            List<K> keys = new List<K>();
+            InOrderTraversalHead(root, to, inclusive, keys);
+            return keys;
+        }
+
+        public List<K> GetKeysTail(K from, bool inclusive)
+        {
+            List<K> keys = new List<K>();
+            InOrderTraversalTail(root, from, inclusive, keys);
+            return keys;
+        }
+
+        public TreeNode<K, V> GetRoot()
+        {
+            return root;
+        }
+
+        private int Compare(K key1, K key2)
+        {
+            return comparator.Compare(key1, key2);
+        }
+
+        private TreeNode<K, V> GetNode(K key)
+        {
+            TreeNode<K, V> current = root;
+
+            while (current != null)
+            {
+                int cmp = Compare(key, current.Key);
+
+                if (cmp < 0)
+                    current = current.Left;
+                else if (cmp > 0)
+                    current = current.Right;
+                else
+                    return current;
+            }
+
+            return null;
+        }
+
+        private void FixAfterInsertion(TreeNode<K, V> node)
+        {
+            while (node != root && node.Parent.Color == Color.Red)
+            {
+                if (node.Parent == node.Parent.Parent.Left)
+                {
+                    TreeNode<K, V> uncle = node.Parent.Parent.Right;
+
+                    if (uncle != null && uncle.Color == Color.Red)
+                    {
+                        node.Parent.Color = Color.Black;
+                        uncle.Color = Color.Black;
+                        node.Parent.Parent.Color = Color.Red;
+                        node = node.Parent.Parent;
+                    }
+                    else
+                    {
+                        if (node == node.Parent.Right)
+                        {
+                            node = node.Parent;
+                            RotateLeft(node);
+                        }
+
+                        node.Parent.Color = Color.Black;
+                        node.Parent.Parent.Color = Color.Red;
+                        RotateRight(node.Parent.Parent);
+                    }
+                }
+                else
+                {
+                    TreeNode<K, V> uncle = node.Parent.Parent.Left;
+
+                    if (uncle != null && uncle.Color == Color.Red)
+                    {
+                        node.Parent.Color = Color.Black;
+                        uncle.Color = Color.Black;
+                        node.Parent.Parent.Color = Color.Red;
+                        node = node.Parent.Parent;
+                    }
+                    else
+                    {
+                        if (node == node.Parent.Left)
+                        {
+                            node = node.Parent;
+                            RotateRight(node);
+                        }
+
+                        node.Parent.Color = Color.Black;
+                        node.Parent.Parent.Color = Color.Red;
+                        RotateLeft(node.Parent.Parent);
+                    }
+                }
+            }
+
+            root.Color = Color.Black;
+        }
+
+        private void DeleteNode(TreeNode<K, V> node)
+        {
+            TreeNode<K, V> replacement;
+            TreeNode<K, V> child;
+
+            if (node.Left != null && node.Right != null)
+            {
+                TreeNode<K, V> successor = GetSuccessor(node);
+                node.Key = successor.Key;
+                node.Value = successor.Value;
+                node = successor;
+            }
+
+            child = node.Left != null ? node.Left : node.Right;
+
+            if (child != null)
+            {
+                replacement = child;
+                replacement.Parent = node.Parent;
+
+                if (node.Parent == null)
+                    root = replacement;
+                else if (node == node.Parent.Left)
+                    node.Parent.Left = replacement;
+                else
+                    node.Parent.Right = replacement;
+
+                node.Left = node.Right = node.Parent = null;
+
+                if (node.Color == Color.Black)
+                    FixAfterDeletion(replacement);
+            }
+            else if (node.Parent == null)
+            {
+                root = null;
+            }
+            else
+            {
+                if (node.Color == Color.Black)
+                    FixAfterDeletion(node);
+
+                if (node.Parent != null)
+                {
+                    if (node == node.Parent.Left)
+                        node.Parent.Left = null;
+                    else if (node == node.Parent.Right)
+                        node.Parent.Right = null;
+
+                    node.Parent = null;
+                }
+            }
+
+            size--;
+        }
+
+        private void FixAfterDeletion(TreeNode<K, V> node)
+        {
+            while (node != root && GetColor(node) == Color.Black)
+            {
+                if (node == node.Parent.Left)
+                {
+                    TreeNode<K, V> sibling = node.Parent.Right;
+
+                    if (GetColor(sibling) == Color.Red)
+                    {
+                        sibling.Color = Color.Black;
+                        node.Parent.Color = Color.Red;
+                        RotateLeft(node.Parent);
+                        sibling = node.Parent.Right;
+                    }
+
+                    if (GetColor(sibling.Left) == Color.Black &&
+                        GetColor(sibling.Right) == Color.Black)
+                    {
+                        sibling.Color = Color.Red;
+                        node = node.Parent;
+                    }
+                    else
+                    {
+                        if (GetColor(sibling.Right) == Color.Black)
+                        {
+                            sibling.Left.Color = Color.Black;
+                            sibling.Color = Color.Red;
+                            RotateRight(sibling);
+                            sibling = node.Parent.Right;
+                        }
+
+                        sibling.Color = node.Parent.Color;
+                        node.Parent.Color = Color.Black;
+                        sibling.Right.Color = Color.Black;
+                        RotateLeft(node.Parent);
+                        node = root;
+                    }
+                }
+                else
+                {
+                    TreeNode<K, V> sibling = node.Parent.Left;
+
+                    if (GetColor(sibling) == Color.Red)
+                    {
+                        sibling.Color = Color.Black;
+                        node.Parent.Color = Color.Red;
+                        RotateRight(node.Parent);
+                        sibling = node.Parent.Left;
+                    }
+
+                    if (GetColor(sibling.Right) == Color.Black &&
+                        GetColor(sibling.Left) == Color.Black)
+                    {
+                        sibling.Color = Color.Red;
+                        node = node.Parent;
+                    }
+                    else
+                    {
+                        if (GetColor(sibling.Left) == Color.Black)
+                        {
+                            sibling.Right.Color = Color.Black;
+                            sibling.Color = Color.Red;
+                            RotateLeft(sibling);
+                            sibling = node.Parent.Left;
+                        }
+
+                        sibling.Color = node.Parent.Color;
+                        node.Parent.Color = Color.Black;
+                        sibling.Left.Color = Color.Black;
+                        RotateRight(node.Parent);
+                        node = root;
+                    }
+                }
+            }
+
+            node.Color = Color.Black;
+        }
+
+        private Color GetColor(TreeNode<K, V> node)
+        {
+            return node == null ? Color.Black : node.Color;
+        }
+
+        private void RotateLeft(TreeNode<K, V> node)
+        {
+            TreeNode<K, V> rightChild = node.Right;
+            node.Right = rightChild.Left;
+
+            if (rightChild.Left != null)
+                rightChild.Left.Parent = node;
+
+            rightChild.Parent = node.Parent;
+
+            if (node.Parent == null)
+                root = rightChild;
+            else if (node == node.Parent.Left)
+                node.Parent.Left = rightChild;
+            else
+                node.Parent.Right = rightChild;
+
+            rightChild.Left = node;
+            node.Parent = rightChild;
+        }
+
+        private void RotateRight(TreeNode<K, V> node)
+        {
+            TreeNode<K, V> leftChild = node.Left;
+            node.Left = leftChild.Right;
+
+            if (leftChild.Right != null)
+                leftChild.Right.Parent = node;
+
+            leftChild.Parent = node.Parent;
+
+            if (node.Parent == null)
+                root = leftChild;
+            else if (node == node.Parent.Right)
+                node.Parent.Right = leftChild;
+            else
+                node.Parent.Left = leftChild;
+
+            leftChild.Right = node;
+            node.Parent = leftChild;
+        }
+
+        private TreeNode<K, V> GetSuccessor(TreeNode<K, V> node)
+        {
+            if (node.Right != null)
+            {
+                TreeNode<K, V> current = node.Right;
+                while (current.Left != null)
+                    current = current.Left;
+                return current;
+            }
+
+            TreeNode<K, V> parent = node.Parent;
+            while (parent != null && node == parent.Right)
+            {
+                node = parent;
+                parent = parent.Parent;
+            }
+
+            return parent;
+        }
+
+        private void InOrderTraversal(TreeNode<K, V> node, List<K> keys)
+        {
+            if (node == null)
+                return;
+
+            InOrderTraversal(node.Left, keys);
+            keys.Add(node.Key);
+            InOrderTraversal(node.Right, keys);
+        }
+
+        private void InOrderTraversalRange(TreeNode<K, V> node, K from, bool fromInclusive,
+                                           K to, bool toInclusive, List<K> keys)
+        {
+            if (node == null)
+                return;
+
+            int cmpFrom = Compare(node.Key, from);
+            int cmpTo = Compare(node.Key, to);
+
+            if (cmpFrom > 0 || (fromInclusive && cmpFrom == 0))
+                InOrderTraversalRange(node.Left, from, fromInclusive, to, toInclusive, keys);
+
+            bool include = false;
+            if (cmpFrom > 0 || (fromInclusive && cmpFrom == 0))
+            {
+                if (cmpTo < 0 || (toInclusive && cmpTo == 0))
+                    include = true;
+            }
+
+            if (include)
+                keys.Add(node.Key);
+
+            if (cmpTo < 0 || (toInclusive && cmpTo == 0))
+                InOrderTraversalRange(node.Right, from, fromInclusive, to, toInclusive, keys);
+        }
+
+        private void InOrderTraversalHead(TreeNode<K, V> node, K to, bool inclusive, List<K> keys)
+        {
+            if (node == null)
+                return;
+
+            int cmp = Compare(node.Key, to);
+
+            if (cmp < 0)
+            {
+                InOrderTraversalHead(node.Left, to, inclusive, keys);
+                keys.Add(node.Key);
+                InOrderTraversalHead(node.Right, to, inclusive, keys);
+            }
+            else if (inclusive && cmp == 0)
+            {
+                InOrderTraversalHead(node.Left, to, inclusive, keys);
+                keys.Add(node.Key);
+            }
+            else
+            {
+                InOrderTraversalHead(node.Left, to, inclusive, keys);
+            }
+        }
+
+        private void InOrderTraversalTail(TreeNode<K, V> node, K from, bool inclusive, List<K> keys)
+        {
+            if (node == null)
+                return;
+
+            int cmp = Compare(node.Key, from);
+
+            if (cmp > 0)
+            {
+                InOrderTraversalTail(node.Left, from, inclusive, keys);
+                keys.Add(node.Key);
+                InOrderTraversalTail(node.Right, from, inclusive, keys);
+            }
+            else if (inclusive && cmp == 0)
+            {
+                InOrderTraversalTail(node.Left, from, inclusive, keys);
+                keys.Add(node.Key);
+                InOrderTraversalTail(node.Right, from, inclusive, keys);
+            }
+            else
+            {
+                InOrderTraversalTail(node.Right, from, inclusive, keys);
+            }
+        }
+    }
+
+    // Множество на основе красно-черного дерева
+    public class MyTreeSet<E> : IEnumerable<E> where E : IComparable<E>
+    {
+        private MyTreeMap<E, object> m;
+        private static readonly object PRESENT = new object();
+
+        // 1) Конструктор для создания пустого множества с естественным порядком
+        public MyTreeSet()
+        {
+            m = new MyTreeMap<E, object>();
+        }
+
+        // 2) Конструктор с указанным объектом MyTreeMap
+        public MyTreeSet(MyTreeMap<E, object> map)
+        {
+            if (map == null)
+                throw new ArgumentNullException("map");
+            m = map;
         }
 
         // 3) Конструктор с компаратором
-        public MyTreeSet(IComparer<T> comparator)
+        public MyTreeSet(IComparer<E> comparator)
         {
-            map = new MyTreeMap<T, object>(comparator);
+            m = new MyTreeMap<E, object>(comparator);
         }
 
         // 4) Конструктор из массива
-        public MyTreeSet(T[] a) : this()
+        public MyTreeSet(E[] a)
         {
+            m = new MyTreeMap<E, object>();
             if (a != null)
-                AddAll(a);
+            {
+                for (int i = 0; i < a.Length; i++)
+                {
+                    Add(a[i]);
+                }
+            }
         }
 
-        // 5) Конструктор из другого сортированного множества (любого, реализующего IEnumerable)
-        public MyTreeSet(IEnumerable<T> s) : this()
+        // 5) Конструктор из сортированного множества
+        public MyTreeSet(SortedSet<E> s)
         {
+            m = new MyTreeMap<E, object>();
             if (s != null)
             {
-                foreach (var item in s)
+                foreach (E item in s)
+                {
                     Add(item);
+                }
             }
         }
 
         // 6) Добавление элемента
-        public bool Add(T e)
+        public bool Add(E e)
         {
             if (e == null)
-                throw new ArgumentNullException(nameof(e));
-            // Если ключ уже был, Put вернёт старое значение (не null) – значит элемент уже существовал
-            return map.Put(e, PRESENT) == null;
+                throw new ArgumentNullException("e");
+
+            object oldValue = m.Put(e, PRESENT);
+            return oldValue == null;
         }
 
-        // 7) Добавление всех элементов из массива
-        public void AddAll(T[] a)
+        // 7) Добавление элементов из массива
+        public bool AddAll(E[] a)
         {
             if (a == null)
-                throw new ArgumentNullException(nameof(a));
-            foreach (var item in a)
-                Add(item);
+                throw new ArgumentNullException("a");
+
+            bool modified = false;
+            for (int i = 0; i < a.Length; i++)
+            {
+                if (Add(a[i]))
+                    modified = true;
+            }
+            return modified;
         }
 
         // 8) Очистка множества
         public void Clear()
         {
-            map.Clear();
+            m.Clear();
         }
 
-        // 9) Проверка наличия элемента
+        // 9) Проверка наличия объекта
         public bool Contains(object o)
         {
             if (o == null)
                 return false;
-            return map.ContainsKey(o);
+
+            try
+            {
+                E key = (E)o;
+                return m.ContainsKey(key);
+            }
+            catch (InvalidCastException)
+            {
+                return false;
+            }
         }
 
-        // 10) Проверка наличия всех элементов из массива
-        public bool ContainsAll(T[] a)
+        // 10) Проверка наличия всех объектов из массива
+        public bool ContainsAll(E[] a)
         {
             if (a == null)
-                throw new ArgumentNullException(nameof(a));
-            foreach (var item in a)
+                throw new ArgumentNullException("a");
+
+            for (int i = 0; i < a.Length; i++)
             {
-                if (!Contains(item))
+                if (!Contains(a[i]))
                     return false;
             }
             return true;
@@ -100,322 +775,476 @@ namespace Task_19
         // 11) Проверка на пустоту
         public bool IsEmpty()
         {
-            return map.IsEmpty();
+            return m.IsEmpty();
         }
 
-        // 12) Удаление одного элемента
+        // 12) Удаление объекта
         public bool Remove(object o)
         {
             if (o == null)
                 return false;
-            return map.Remove(o) != null;
+
+            try
+            {
+                E key = (E)o;
+                object oldValue = m.Remove(key);
+                return oldValue != null;
+            }
+            catch (InvalidCastException)
+            {
+                return false;
+            }
         }
 
-        // 13) Удаление всех указанных элементов
-        public bool RemoveAll(T[] a)
+        // 13) Удаление всех объектов из массива
+        public bool RemoveAll(E[] a)
         {
             if (a == null)
-                throw new ArgumentNullException(nameof(a));
+                throw new ArgumentNullException("a");
+
             bool modified = false;
-            foreach (var item in a)
+            for (int i = 0; i < a.Length; i++)
             {
-                if (Remove(item))
+                if (Remove(a[i]))
                     modified = true;
             }
             return modified;
         }
 
-        // 14) Оставить только указанные элементы
-        public bool RetainAll(T[] a)
+        // 14) Оставить только указанные объекты
+        public bool RetainAll(E[] a)
         {
             if (a == null)
-                throw new ArgumentNullException(nameof(a));
-            // Создаём множество из a для быстрой проверки
-            var set = new HashSet<T>(a);
-            var toRemove = new List<T>();
-            foreach (var key in map.KeySet())
+                throw new ArgumentNullException("a");
+
+            MyTreeSet<E> toRetain = new MyTreeSet<E>(a);
+            bool modified = false;
+
+            E[] allElements = ToArray();
+            for (int i = 0; i < allElements.Length; i++)
             {
-                if (!set.Contains(key))
-                    toRemove.Add(key);
+                if (!toRetain.Contains(allElements[i]))
+                {
+                    Remove(allElements[i]);
+                    modified = true;
+                }
             }
-            foreach (var key in toRemove)
-                map.Remove(key);
-            return toRemove.Count > 0;
+
+            return modified;
         }
 
         // 15) Размер множества
         public int Size()
         {
-            return map.Size();
+            return m.Size();
         }
 
-        // 16) Преобразование в массив (без типа)
-        public object[] ToArray()
+        // 16) Преобразование в массив объектов
+        public E[] ToArray()
         {
-            var keys = map.KeySet();
-            object[] result = new object[keys.Count];
+            List<E> keys = m.GetKeysInOrder();
+            E[] result = new E[keys.Count];
             for (int i = 0; i < keys.Count; i++)
+            {
                 result[i] = keys[i];
+            }
             return result;
         }
 
-        // 17) Преобразование в массив указанного типа
-        public T[] ToArray(T[] a)
+        // 17) Преобразование в массив с указанным типом
+        public E[] ToArray(E[] a)
         {
-            var keys = map.KeySet();
             if (a == null)
             {
-                // Создаём новый массив нужного размера
-                T[] result = new T[keys.Count];
-                for (int i = 0; i < keys.Count; i++)
-                    result[i] = keys[i];
-                return result;
+                return ToArray();
             }
-            else
+
+            List<E> keys = m.GetKeysInOrder();
+
+            if (a.Length < keys.Count)
             {
-                if (a.Length < keys.Count)
-                {
-                    // Если переданный массив слишком мал, создаём новый
-                    T[] result = new T[keys.Count];
-                    for (int i = 0; i < keys.Count; i++)
-                        result[i] = keys[i];
-                    return result;
-                }
-                else
-                {
-                    for (int i = 0; i < keys.Count; i++)
-                        a[i] = keys[i];
-                    if (a.Length > keys.Count)
-                        a[keys.Count] = default(T);
-                    return a;
-                }
+                a = new E[keys.Count];
             }
+
+            for (int i = 0; i < keys.Count; i++)
+            {
+                a[i] = keys[i];
+            }
+
+            if (a.Length > keys.Count)
+            {
+                a[keys.Count] = default(E);
+            }
+
+            return a;
         }
 
         // 18) Первый (наименьший) элемент
-        public T First()
+        public E First()
         {
             if (IsEmpty())
-                throw new InvalidOperationException("Множество пусто");
-            return map.FirstKey();
+                throw new InvalidOperationException("Set is empty");
+
+            TreeNode<E, object> node = m.GetFirstNode();
+            return node.Key;
         }
 
         // 19) Последний (наибольший) элемент
-        public T Last()
+        public E Last()
         {
             if (IsEmpty())
-                throw new InvalidOperationException("Множество пусто");
-            return map.LastKey();
+                throw new InvalidOperationException("Set is empty");
+
+            TreeNode<E, object> node = m.GetLastNode();
+            return node.Key;
         }
 
-        // 20) subSet – элементы от fromElement (включительно) до toElement (исключительно)
-        public MyTreeSet<T> SubSet(T fromElement, T toElement)
+        // 20) Подмножество из диапазона [fromElement; toElement)
+        public MyTreeSet<E> SubSet(E fromElement, E toElement)
         {
             if (fromElement == null || toElement == null)
                 throw new ArgumentNullException();
-            var subMap = map.SubMap(fromElement, toElement);
-            return new MyTreeSet<T>(subMap);
+
+            if (fromElement.CompareTo(toElement) > 0)
+                throw new ArgumentException("fromElement больше, чем toElement");
+
+            MyTreeSet<E> result = new MyTreeSet<E>();
+            List<E> keys = m.GetKeysInRange(fromElement, true, toElement, false);
+
+            for (int i = 0; i < keys.Count; i++)
+            {
+                result.Add(keys[i]);
+            }
+
+            return result;
         }
 
-        // 21) headSet – элементы, меньшие toElement (исключительно)
-        public MyTreeSet<T> HeadSet(T toElement)
+        // 21) Множество элементов, меньших чем указанный
+        public MyTreeSet<E> HeadSet(E toElement)
         {
             if (toElement == null)
                 throw new ArgumentNullException();
-            var headMap = map.HeadMap(toElement);
-            return new MyTreeSet<T>(headMap);
+
+            MyTreeSet<E> result = new MyTreeSet<E>();
+            List<E> keys = m.GetKeysHead(toElement, false);
+
+            for (int i = 0; i < keys.Count; i++)
+            {
+                result.Add(keys[i]);
+            }
+
+            return result;
         }
 
-        // 22) tailSet – элементы, большие или равные fromElement
-        public MyTreeSet<T> TailSet(T fromElement)
+        // 22) Множество элементов, больших или равных указанному
+        public MyTreeSet<E> TailSet(E fromElement)
         {
             if (fromElement == null)
                 throw new ArgumentNullException();
-            var tailMap = map.TailMap(fromElement);
-            return new MyTreeSet<T>(tailMap);
+
+            MyTreeSet<E> result = new MyTreeSet<E>();
+            List<E> keys = m.GetKeysTail(fromElement, true);
+
+            for (int i = 0; i < keys.Count; i++)
+            {
+                result.Add(keys[i]);
+            }
+
+            return result;
         }
 
-        // 23) ceiling – наименьший элемент e >= obj
-        public T Ceiling(T obj)
+        // 23) Наименьший элемент e >= obj
+        public E Ceiling(E obj)
         {
             if (obj == null)
-                throw new ArgumentNullException(nameof(obj));
-            return map.CeilingKey(obj);
+                throw new ArgumentNullException();
+
+            TreeNode<E, object> node = m.GetCeilingNode(obj);
+            return node != null ? node.Key : default(E);
         }
 
-        // 24) floor – наибольший элемент e <= obj
-        public T Floor(T obj)
+        // 24) Наибольший элемент e <= obj
+        public E Floor(E obj)
         {
             if (obj == null)
-                throw new ArgumentNullException(nameof(obj));
-            return map.FloorKey(obj);
+                throw new ArgumentNullException();
+
+            TreeNode<E, object> node = m.GetFloorNode(obj);
+            return node != null ? node.Key : default(E);
         }
 
-        // 25) higher – наименьший элемент e > obj
-        public T Higher(T obj)
+        // 25) Наименьший элемент e > obj
+        public E Higher(E obj)
         {
             if (obj == null)
-                throw new ArgumentNullException(nameof(obj));
-            return map.HigherKey(obj);
+                throw new ArgumentNullException();
+
+            TreeNode<E, object> node = m.GetHigherNode(obj);
+            return node != null ? node.Key : default(E);
         }
 
-        // 26) lower – наибольший элемент e < obj
-        public T Lower(T obj)
+        // 26) Наибольший элемент e < obj
+        public E Lower(E obj)
         {
             if (obj == null)
-                throw new ArgumentNullException(nameof(obj));
-            return map.LowerKey(obj);
+                throw new ArgumentNullException();
+
+            TreeNode<E, object> node = m.GetLowerNode(obj);
+            return node != null ? node.Key : default(E);
         }
 
-        // 27) headSet с указанием, включать ли upperBound
-        public MyTreeSet<T> HeadSet(T upperBound, bool inclusive)
+        // 27) Множество элементов, меньших upperBound
+        public MyTreeSet<E> HeadSet(E upperBound, bool incl)
         {
             if (upperBound == null)
-                throw new ArgumentNullException(nameof(upperBound));
-            if (inclusive)
+                throw new ArgumentNullException();
+
+            MyTreeSet<E> result = new MyTreeSet<E>();
+            List<E> keys = m.GetKeysHead(upperBound, incl);
+
+            for (int i = 0; i < keys.Count; i++)
             {
-                var result = new MyTreeSet<T>(map.Comparator);
-                foreach (var key in map.KeySet())
-                {
-                    if (map.Comparator.Compare(key, upperBound) <= 0)
-                        result.Add(key);
-                }
-                return result;
+                result.Add(keys[i]);
             }
-            else
-            {
-                return HeadSet(upperBound);
-            }
+
+            return result;
         }
 
-        // 28) subSet с указанием включения границ
-        public MyTreeSet<T> SubSet(T lowerBound, bool lowInclusive, T upperBound, bool highInclusive)
+        // 28) Множество элементов из диапазона
+        public MyTreeSet<E> SubSet(E lowerBound, bool lowIncl, E upperBound, bool highIncl)
         {
             if (lowerBound == null || upperBound == null)
                 throw new ArgumentNullException();
-            var result = new MyTreeSet<T>(map.Comparator);
-            foreach (var key in map.KeySet())
+
+            if (lowerBound.CompareTo(upperBound) > 0)
+                throw new ArgumentException("lowerBound больше, чем upperBound");
+
+            MyTreeSet<E> result = new MyTreeSet<E>();
+            List<E> keys = m.GetKeysInRange(lowerBound, lowIncl, upperBound, highIncl);
+
+            for (int i = 0; i < keys.Count; i++)
             {
-                int cmpLow = map.Comparator.Compare(key, lowerBound);
-                int cmpHigh = map.Comparator.Compare(key, upperBound);
-                bool lowOk = lowInclusive ? cmpLow >= 0 : cmpLow > 0;
-                bool highOk = highInclusive ? cmpHigh <= 0 : cmpHigh < 0;
-                if (lowOk && highOk)
-                    result.Add(key);
+                result.Add(keys[i]);
             }
+
             return result;
         }
 
-        // 29) tailSet с указанием включения нижней границы
-        public MyTreeSet<T> TailSet(T fromElement, bool inclusive)
+        // 29) Множество элементов, больших или равных fromElement
+        public MyTreeSet<E> TailSet(E fromElement, bool inclusive)
         {
             if (fromElement == null)
-                throw new ArgumentNullException(nameof(fromElement));
-            if (inclusive)
-            {
-                return TailSet(fromElement);
-            }
-            else
-            {
-                var result = new MyTreeSet<T>(map.Comparator);
-                foreach (var key in map.KeySet())
-                {
-                    if (map.Comparator.Compare(key, fromElement) > 0)
-                        result.Add(key);
-                }
-                return result;
-            }
-        }
+                throw new ArgumentNullException();
 
-        // 30) pollLast – удалить и вернуть последний (наибольший) элемент
-        public T PollLast()
-        {
-            if (IsEmpty())
-                return default(T);
-            var entry = map.PollLastEntry();
-            return entry.HasValue ? entry.Value.Key : default(T);
-        }
+            MyTreeSet<E> result = new MyTreeSet<E>();
+            List<E> keys = m.GetKeysTail(fromElement, inclusive);
 
-        // 31) pollFirst – удалить и вернуть первый (наименьший) элемент
-        public T PollFirst()
-        {
-            if (IsEmpty())
-                return default(T);
-            var entry = map.PollFirstEntry();
-            return entry.HasValue ? entry.Value.Key : default(T);
-        }
-
-        // 32) descendingIterator – возвращает итератор в обратном порядке
-        public IEnumerator<T> DescendingIterator()
-        {
-            var list = map.KeySet();
-            for (int i = list.Count - 1; i >= 0; i--)
-                yield return list[i];
-        }
-
-        // 33) descendingSet – возвращает множество в обратном порядке (копия с обратным компаратором)
-        public MyTreeSet<T> DescendingSet()
-        {
-            // Создаём компаратор, обратный текущему
-            IComparer<T> reverseComp;
-            if (map.Comparator == Comparer<T>.Default)
+            for (int i = 0; i < keys.Count; i++)
             {
-                // Для естественного порядка создаём обратный через Comparer<T>.Create
-                reverseComp = Comparer<T>.Create((x, y) => map.Comparator.Compare(y, x));
+                result.Add(keys[i]);
             }
-            else
-            {
-                reverseComp = Comparer<T>.Create((x, y) => map.Comparator.Compare(y, x));
-            }
-            var result = new MyTreeSet<T>(reverseComp);
-            // Добавляем все элементы в обратном порядке (они автоматически упорядочатся по новому компаратору)
-            foreach (var key in map.KeySet())
-                result.Add(key);
+
             return result;
         }
-        
 
-        public IEnumerator<T> GetEnumerator()
+        // 30) Возврат и удаление последнего элемента
+        public E PollLast()
         {
-            return map.KeySet().GetEnumerator();
+            if (IsEmpty())
+                return default(E);
+
+            TreeNode<E, object> node = m.GetLastNode();
+            E key = node.Key;
+            m.Remove(key);
+            return key;
         }
 
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        // 31) Возврат и удаление первого элемента
+        public E PollFirst()
+        {
+            if (IsEmpty())
+                return default(E);
+
+            TreeNode<E, object> node = m.GetFirstNode();
+            E key = node.Key;
+            m.Remove(key);
+            return key;
+        }
+
+        // 32) Обратный итератор
+        public IEnumerator<E> DescendingIterator()
+        {
+            E[] elements = ToArray();
+            for (int i = elements.Length - 1; i >= 0; i--)
+            {
+                yield return elements[i];
+            }
+        }
+
+        // 33) Обратное множество
+        public MyTreeSet<E> DescendingSet()
+        {
+            MyTreeSet<E> result = new MyTreeSet<E>();
+            E[] elements = ToArray();
+
+            for (int i = elements.Length - 1; i >= 0; i--)
+            {
+                result.Add(elements[i]);
+            }
+
+            return result;
+        }
+
+        // Реализация IEnumerable
+        public IEnumerator<E> GetEnumerator()
+        {
+            E[] elements = ToArray();
+            for (int i = 0; i < elements.Length; i++)
+            {
+                yield return elements[i];
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }
     }
 
-    internal class Program
+    class Program
     {
-        static void Main()
+        static void Main(string[] args)
         {
-            MyTreeSet<string> set = new MyTreeSet<string>();
+            try
+            {
 
-            set.Add("яблоко");
-            set.Add("банан");
-            set.Add("вишня");
-            set.Add("арбуз");
-            set.Add("дыня");
+                // Создание пустого множества и добавление элементов
+                MyTreeSet<int> set1 = new MyTreeSet<int>();
+                set1.Add(5);
+                set1.Add(3);
+                set1.Add(7);
+                set1.Add(1);
+                set1.Add(9);
 
-            Console.WriteLine($"Размер: {set.Size()}");
+                Console.Write("Множество: ");
+                foreach (int item in set1)
+                {
+                    Console.Write(item + " ");
+                }
+                Console.WriteLine("\nРазмер: " + set1.Size());
 
-            Console.WriteLine("Все элементы: " + string.Join(", ", set));
+                // Проверка наличия элементов
+                Console.WriteLine("Содержит 3: " + set1.Contains(3));
+                Console.WriteLine("Содержит 10: " + set1.Contains(10));
 
-            Console.WriteLine($"Первый: {set.First()}");
-            Console.WriteLine($"Последний: {set.Last()}");
+                // Удаление элементов
+                set1.Remove(3);
+                Console.Write("После удаления 3: ");
+                foreach (int item in set1)
+                {
+                    Console.Write(item + " ");
+                }
+                Console.WriteLine();
 
-            Console.WriteLine($"Содержит 'банан': {set.Contains("банан")}");
-            Console.WriteLine($"Содержит 'апельсин': {set.Contains("апельсин")}");
+                // Первый и последний элементы
+                Console.WriteLine("Первый: " + set1.First());
+                Console.WriteLine("Последний: " + set1.Last());
 
-            Console.WriteLine($"Меньше 'вишня': {set.Lower("вишня")}");
-            Console.WriteLine($"Больше 'вишня': {set.Higher("вишня")}");
-            Console.WriteLine($"Не больше 'вишня': {set.Floor("вишня")}");
-            Console.WriteLine($"Не меньше 'вишня': {set.Ceiling("вишня")}");
+                // Ceiling, floor, higher, lower
+                Console.WriteLine("Ceiling(4): " + set1.Ceiling(4));
+                Console.WriteLine("Floor(4): " + set1.Floor(4));
+                Console.WriteLine("Higher(5): " + set1.Higher(5));
+                Console.WriteLine("Lower(5): " + set1.Lower(5));
 
-            set.Remove("банан");
-            Console.WriteLine($"После удаления 'банан': {string.Join(", ", set)}");
+                // Подмножества
+                MyTreeSet<int> subSet = set1.SubSet(2, 8);
+                Console.Write("SubSet(2, 8): ");
+                foreach (int item in subSet)
+                {
+                    Console.Write(item + " ");
+                }
+                Console.WriteLine();
+
+                MyTreeSet<int> headSet = set1.HeadSet(7);
+                Console.Write("HeadSet(7): ");
+                foreach (int item in headSet)
+                {
+                    Console.Write(item + " ");
+                }
+                Console.WriteLine();
+
+                MyTreeSet<int> tailSet = set1.TailSet(5);
+                Console.Write("TailSet(5): ");
+                foreach (int item in tailSet)
+                {
+                    Console.Write(item + " ");
+                }
+                Console.WriteLine();
+
+                // pollFirst и pollLast
+                Console.WriteLine("PollFirst: " + set1.PollFirst());
+                Console.WriteLine("PollLast: " + set1.PollLast());
+                Console.Write("После удаления: ");
+                foreach (int item in set1)
+                {
+                    Console.Write(item + " ");
+                }
+                Console.WriteLine();
+
+                // Обратный итератор
+                Console.Write("\nНовый массив: 10, 20, 30, 40\n");
+                MyTreeSet<int> set2 = new MyTreeSet<int>();
+                set2.Add(10);
+                set2.Add(20);
+                set2.Add(30);
+                set2.Add(40);
+
+                Console.Write("Обратный итератор: ");
+                IEnumerator<int> descIter = set2.DescendingIterator();
+                while (descIter.MoveNext())
+                {
+                    Console.Write(descIter.Current + " ");
+                }
+                Console.WriteLine();
+
+                MyTreeSet<int> descSet = set2.DescendingSet();
+                Console.Write("Обратное множество: ");
+                foreach (int item in descSet)
+                {
+                    Console.Write(item + " ");
+                }
+                Console.WriteLine();
+
+                // Работа с массивами
+                int[] arr = new int[] { 100, 200, 300 };
+                set2.AddAll(arr);
+                Console.Write("После добавления массива: ");
+                foreach (int item in set2)
+                {
+                    Console.Write(item + " ");
+                }
+                Console.WriteLine();
+
+                int[] toArray = set2.ToArray();
+                Console.Write("ToArray: ");
+                foreach (int item in toArray)
+                {
+                    Console.Write(item + " ");
+                }
+                Console.WriteLine();
+
+                // Очистка
+                Console.WriteLine("\nТест 10: Очистка");
+                set2.Clear();
+                Console.WriteLine("IsEmpty: " + set2.IsEmpty());
+                Console.WriteLine("Size: " + set2.Size());
+
+                Console.WriteLine("\nВсе тесты выполнены успешно!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Ошибка: " + ex.Message);
+            }
         }
-
     }
 }
